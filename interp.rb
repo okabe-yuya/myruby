@@ -36,16 +36,28 @@ def evaluate(tree, env)
     env[tree[1]] = evaluate(tree[2], env)
   when 'var_ref'
     env[tree[1]]
+  when 'if'
+    if evaluate(tree[1], env)
+      evaluate(tree[2], env)
+    else
+      evaluate(tree[3], env)
+    end
+  when 'while'
+    while evaluate(tree[1], env)
+      evaluate(tree[2], env)
+    end
+  when 'while2'
+    while evaluate(tree[1], env)
+      evaluate(tree[2], env)
+    end
   else
     raise "unsupport operater: #{tree[0]}"
   end
 end
 
-def main
-  env = {}
-  inputs = minruby_load()
-  tree = minruby_parse(inputs)
-  evaluate(tree, env)
-end
 
-main()
+env = {}
+inputs = minruby_load()
+tree = minruby_parse(inputs)
+evaluate(tree, env)
+pp tree
