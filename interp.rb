@@ -18,10 +18,16 @@ def evaluate(tree, genv, lenv)
     evaluate(tree[1], genv, lenv) ** evaluate(tree[2], genv, lenv)
   when '>'
     evaluate(tree[1], genv, lenv) > evaluate(tree[2], genv, lenv)
+  when '>='
+    evaluate(tree[1], genv, lenv) >= evaluate(tree[2], genv, lenv)
   when '<'
     evaluate(tree[1], genv, lenv) < evaluate(tree[2], genv, lenv)
+  when '<='
+    evaluate(tree[1], genv, lenv) <= evaluate(tree[2], genv, lenv)
   when '=='
     evaluate(tree[1], genv, lenv) == evaluate(tree[2], genv, lenv)
+  when '!='
+    evaluate(tree[1], genv, lenv) != evaluate(tree[2], genv, lenv)
   when 'func_def'
     genv[tree[1]] = ['user_defined', tree[2], tree[3]]
   when 'func_call'
@@ -29,7 +35,7 @@ def evaluate(tree, genv, lenv)
     i = 0
     while tree[i + 2]
       args[i] = evaluate(tree[i + 2], genv, lenv)
-      i += 1
+      i = i + 1
     end
     mhd = genv[tree[1]]
     if mhd[0] == 'buildin'
@@ -40,16 +46,42 @@ def evaluate(tree, genv, lenv)
       i = 0
       while params[i]
         new_lenv[params[i]] = args[i]
-        i += 1
+        i = i + 1
       end
       evaluate(mhd[2], genv, new_lenv)
     end
+  when 'ary_new'
+    ary = []
+    i = 0
+    while tree[i + 1] != nil
+      ary[i] = evaluate(tree[i + 1], genv, lenv)
+      i = i + 1
+    end
+    ary
+  when 'ary_ref'
+    ary = evaluate(tree[1], genv, lenv)
+    idx = evaluate(tree[2], genv, lenv)
+    ary[idx]
+  when 'ary_assign'
+    ary = evaluate(tree[1], genv, lenv)
+    idx = evaluate(tree[2], genv, lenv)
+    ary[idx] = evaluate(tree[3], genv, lenv)
+  when 'hash_new'
+    h = {}
+    i = 0
+    while tree[i + 1] != nil
+      key = evaluate(tree[i + 1], genv, lenv)
+      value = evaluate(tree[i + 2], genv, lenv)
+      h[key] = value
+      i = i + 22
+    end
+    h
   when 'stmts'
     i = 1
     last = nil
     while tree[i] != nil
       last = evaluate(tree[i], genv, lenv)
-      i += 1
+      i = i + 1
     end
     last
   when 'var_assign'
@@ -76,12 +108,15 @@ def evaluate(tree, genv, lenv)
 end
 
 
-
-genv = { 'p' => ['buildin', 'p'] }
+genv = {
+  'p' => ['buildin', 'p'],
+  'require' => ['buildin', 'require'],
+  'minruby_parse' => ['buildin', 'minruby_parse'],
+  'minruby_load' => ['buildin', 'minruby_load'],
+  'minruby_call' => ['buildin', 'minruby_call'],
+}
 lenv = {}
 inputs = minruby_load()
 tree = minruby_parse(inputs)
-res = evaluate(tree, genv, lenv)
 
-pp tree
-puts "res: #{res}"
+evaluate(tree, genv, lenv)
