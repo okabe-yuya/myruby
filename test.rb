@@ -1,2 +1,7 @@
-res = add(1, 2)
-p(res)
+x = 2
+def add(x, y)
+  x + y
+end
+
+add(1, 2)
+p(x)
